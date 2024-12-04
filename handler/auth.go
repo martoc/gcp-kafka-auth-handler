@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"golang.org/x/oauth2/google"
@@ -63,8 +62,15 @@ func (*AuthHandler) buildMessage(googleCreds *google.Credentials) ([]byte, error
 
 	header := `{"typ": "JWT", "alg": "GOOG_OAUTH2_TOKEN"}`
 
-	jwt := fmt.Sprintf(`{"exp": %d, "iss": "%q", "iat": %d, "sub": "%q"}`,
-		time.Now().Add(time.Hour).Unix(), "Google", time.Now().Unix(), googleCreds.ProjectID)
+	var rawCredentials map[string]string
+
+	err = json.Unmarshal(googleCreds.JSON, &rawCredentials)
+	if err != nil {
+		return nil, err
+	}
+
+	jwt := fmt.Sprintf(`{"exp": %d, "iss": "Google", "iat": %d, "sub": %q}`,
+		tokenSource.Expiry.Unix(), time.Now().Unix(), rawCredentials["client_email"])
 
 	fullAccessToken := fmt.Sprintf("%s.%s.%s", b64Encode(header), b64Encode(jwt), b64Encode(tokenSource.AccessToken))
 
@@ -109,7 +115,5 @@ func (h *AuthHandler) ServeHTTP(writer http.ResponseWriter, _ *http.Request) {
 }
 
 func b64Encode(source string) string {
-	encoded := base64.URLEncoding.EncodeToString([]byte(source))
-
-	return strings.TrimRight(encoded, "=")
+	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(source))
 }
