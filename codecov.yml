@@ -1,0 +1,26 @@
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: false
+  branches:
+    - "main"
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: "80%"
+    patch:
+      default:
+        target: auto
+        threshold: "80%"
+
+github_checks:
+    annotations: false
+
+ignore:
+  - "**/*_mock.go"
+  - "**/*_test.go"
