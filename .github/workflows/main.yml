@@ -34,7 +34,7 @@ jobs:
       - name: Build
         run: make build
       - name: Run Integration Tests
-        run: make run-integration-tests || { cat semver.log & exit 1; }
+        run: make run-integration-tests
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:

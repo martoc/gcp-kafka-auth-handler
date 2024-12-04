@@ -13,7 +13,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "collect",
+	Use:   "gcp-kafka-auth-handler",
 	Short: "",
 	Long:  ``,
 }
