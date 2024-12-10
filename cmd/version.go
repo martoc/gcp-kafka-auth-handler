@@ -12,6 +12,7 @@ var (
 	CLIVersion string
 	CLIOs      string
 	CLIArch    string
+	CLISha     string
 )
 
 var versionCmd = &cobra.Command{
@@ -23,10 +24,12 @@ var versionCmd = &cobra.Command{
 			Version string `json:"version"`
 			Os      string `json:"os"`
 			Arch    string `json:"arch"`
+			Sha     string `json:"sha"`
 		}{
 			Version: CLIVersion,
 			Os:      CLIOs,
 			Arch:    CLIArch,
+			Sha:     CLISha,
 		}
 		jsonBytes, err := json.Marshal(jsonData)
 		if err != nil {

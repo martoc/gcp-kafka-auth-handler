@@ -14,7 +14,7 @@ var serveCmd = &cobra.Command{
 	Short: "Serve the API",
 	Long:  `Start the API server`,
 	Run: func(_ *cobra.Command, _ []string) {
-		log.Default().Printf("Version: v%s", CLIVersion)
+		log.Println("Version: v", CLIVersion)
 		handler.StartServer(defaultPort)
 	},
 }
