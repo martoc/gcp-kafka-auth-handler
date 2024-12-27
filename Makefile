@@ -41,7 +41,7 @@ build: clean check lint test ## Cross platform build the binary
 					-X github.com/martoc/$(BIN_NAME)/cmd.CLIVersion=$(BIN_VERSION) \
 					-X github.com/martoc/$(BIN_NAME)/cmd.CLIOs=$$GOOS \
 					-X github.com/martoc/$(BIN_NAME)/cmd.CLIArch=$$GOARCH \
-					-X github.com/martoc/$(BIN_NAME)/cmd.CLISha="$(SHA)" \
+					-X github.com/martoc/$(BIN_NAME)/cmd.CLISha=$(SHA)" \
 					-o $(TARGET)/builds/$(BIN_NAME)-$$GOOS-$$GOARCH main.go ; \
 			chmod 755 $(TARGET)/builds/$(BIN_NAME)-$$GOOS-$$GOARCH ; \
 		done ; \

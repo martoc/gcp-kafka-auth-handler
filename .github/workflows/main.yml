@@ -26,7 +26,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23.4'
+          go-version-file: go.mod
       - name: Tag
         id: tag
         uses: martoc/action-tag@v0
@@ -39,12 +39,6 @@ jobs:
         run: make build
       - name: Run Integration Tests
         run: make run-integration-tests
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          file: target/coverage.out
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Build Container
         uses: martoc/action-container-build@v0
         env:
