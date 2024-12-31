@@ -85,7 +85,8 @@ func (*AuthHandler) buildMessage(googleCreds *google.Credentials) ([]byte, error
 	return json.Marshal(message)
 }
 
-func (h *AuthHandler) ServeHTTP(writer http.ResponseWriter, _ *http.Request) {
+func (h *AuthHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	log.Println("Received request: ", request.Method, request.URL)
 	ctx := context.Background()
 
 	writer.Header().Set("Content-Type", "application/json")
