@@ -62,6 +62,7 @@ func TestAuthHandler_ServeHTTP(t *testing.T) {
 	defer ctrl.Finish()
 
 	// Given
+	request := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	expectedExpiry, _ := time.Parse(time.RFC3339, "2124-10-21T00:00:00Z")
 	googleServiceMock := handler.NewMockGoogleService(ctrl)
 	tokenSourceMock := handler.NewMockTokenSource(ctrl)
@@ -81,7 +82,7 @@ func TestAuthHandler_ServeHTTP(t *testing.T) {
 
 	// When
 	w := httptest.NewRecorder()
-	service.ServeHTTP(w, nil)
+	service.ServeHTTP(w, request)
 	resp := w.Result()
 
 	defer resp.Body.Close()
@@ -131,6 +132,7 @@ func TestAuthHandler_ServeHTTPErrorFeatchingGoogleCredentialsShouldReturnHttpInt
 	defer ctrl.Finish()
 
 	// Given
+	request := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	googleServiceMock := handler.NewMockGoogleService(ctrl)
 	googleServiceMock.EXPECT().FindDefaultCredentials(gomock.Any(), gomock.Any()).Return(nil, errExpectedError)
 
@@ -140,7 +142,7 @@ func TestAuthHandler_ServeHTTPErrorFeatchingGoogleCredentialsShouldReturnHttpInt
 
 	// When
 	w := httptest.NewRecorder()
-	service.ServeHTTP(w, nil)
+	service.ServeHTTP(w, request)
 	resp := w.Result()
 
 	defer resp.Body.Close()
@@ -160,6 +162,7 @@ func TestAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
 	defer ctrl.Finish()
 
 	// Given
+	request := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	googleServiceMock := handler.NewMockGoogleService(ctrl)
 	tokenSourceMock := handler.NewMockTokenSource(ctrl)
 	googleServiceMock.EXPECT().FindDefaultCredentials(gomock.Any(), gomock.Any()).Return(&google.Credentials{
@@ -175,7 +178,7 @@ func TestAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
 
 	// When
 	w := httptest.NewRecorder()
-	service.ServeHTTP(w, nil)
+	service.ServeHTTP(w, request)
 	resp := w.Result()
 
 	defer resp.Body.Close()
