@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/martoc/gcp-kafka-auth-handler/handler"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -95,6 +95,7 @@ func TestAuthHandler_ServeHTTP(t *testing.T) {
 	assert.NotEmpty(t, body)
 
 	var response map[string]interface{}
+
 	_ = json.Unmarshal(body, &response)
 	accessToken := response["access_token"]
 	assert.NotEmpty(t, accessToken)

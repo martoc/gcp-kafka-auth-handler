@@ -1,11 +1,11 @@
 module github.com/martoc/gcp-kafka-auth-handler
 
-go 1.23.0
+go 1.25.5
 
 require (
-	github.com/golang/mock v1.6.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.11.1
+	go.uber.org/mock v0.6.0
 	golang.org/x/oauth2 v0.30.0
 )
 

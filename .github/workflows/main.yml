@@ -7,8 +7,8 @@ on:
       - release/**
   push:
     branches:
-    - main
-    - release/**
+      - main
+      - release/**
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -39,10 +39,3 @@ jobs:
         run: make build
       - name: Run Integration Tests
         run: make run-integration-tests
-      - name: Build Container
-        uses: martoc/action-container-build@v0
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Release on GitHub
-        uses: martoc/action-release@v0
