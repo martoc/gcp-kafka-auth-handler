@@ -28,7 +28,7 @@ init: install ## Installing binaries
 .PHONY: test
 test: ## Run tests
 	@mkdir -p $(TARGET)
-	go test -coverprofile=$(TARGET)/coverage.out $(PACKAGES)
+	go test -coverprofile=$(TARGET)/coverage.out ./handler/...
 	go tool cover -html=$(TARGET)/coverage.out -o $(TARGET)/coverage.html
 
 .PHONY: build
@@ -72,10 +72,13 @@ generate: ## Run source code generation
 .PHONY: install
 install: ## Install development dependencies
 	@echo "==> Installing dependencies..."
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.1
-	go install github.com/golang/mock/mockgen@v1.6.0
-	go install mvdan.cc/gofumpt@v0.6.0
-	go install golang.org/x/tools/cmd/godoc@v0.12.0
+	GOTOOLCHAIN=go1.25.5 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7.2
+	go install go.uber.org/mock/mockgen@v0.6.0
+	go install mvdan.cc/gofumpt@v0.9.2
+	go install github.com/daixiang0/gci@v0.13.7
+	go install golang.org/x/tools/cmd/godoc@v0.30.0
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
 .PHONY: lint
 lint: ## Run linter

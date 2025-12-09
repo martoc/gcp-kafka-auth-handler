@@ -1,0 +1,45 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+target/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace
+go.work
+
+# Documentation
+*.md
+docs/
+
+# CI/CD
+.github/
+
+# Debug and temporary files
+__debug*
+.tmp/
+*.log
+*.log.*
+*.log-*
+*.log_*
+
+# Claude
+.claude/
+CLAUDE.md
+
+# macOS
+.DS_Store
+
+# Integration tests
+integration-tests/

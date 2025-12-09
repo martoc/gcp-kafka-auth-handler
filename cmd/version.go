@@ -33,7 +33,7 @@ var versionCmd = &cobra.Command{
 		}
 		jsonBytes, err := json.Marshal(jsonData)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error marshaling version data:", err)
+			fmt.Fprintln(os.Stderr, "Error marshalling version data:", err)
 		}
 		fmt.Fprintln(os.Stdout, string(jsonBytes))
 	},

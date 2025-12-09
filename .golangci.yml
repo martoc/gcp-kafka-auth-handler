@@ -1,53 +1,6 @@
-linters-settings:
-  gosec:
-    excludes:
-      - G204
-  dupl:
-    threshold: 100
-  funlen:
-    lines: 100
-    statements: 50
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-  gocyclo:
-    min-complexity: 15
-  mnd:
-    checks:
-      - argument
-      - case
-      - condition
-      - return
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-  lll:
-    line-length: 140
-  misspell:
-    locale: US
-  nolintlint:
-    allow-unused: false # report any unused nolint directives
-    require-explanation: false # don't require an explanation for nolint directives
-    require-specific: false # don't require nolint directives to be specific about which linter is being skipped
-
+version: "2"
 linters:
-  # please, do not use `enable-all`: it's deprecated and will be removed soon.
-  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
-  disable-all: true
+  default: none
   enable:
     - asasalint
     - asciicheck
@@ -55,20 +8,20 @@ linters:
     - bodyclose
     - containedctx
     - contextcheck
+    - copyloopvar
     - decorder
     - dogsled
     - dupword
     - durationcheck
+    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
     - exhaustive
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
-    - gci
     - ginkgolinter
     - gocheckcompilerdirectives
     - goconst
@@ -76,17 +29,11 @@ linters:
     - gocyclo
     - godot
     - godox
-    - err113
-    - gofmt
-    - gofumpt
     - goheader
-    - goimports
-    - mnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - grouper
     - importas
@@ -97,6 +44,7 @@ linters:
     - maintidx
     - makezero
     - misspell
+    - mnd
     - musttag
     - nakedret
     - nilerr
@@ -115,23 +63,89 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - stylecheck
-    - tenv
     - testableexamples
     - testpackage
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - unused
     - usestdlibvars
+    - usetesting
     - varnamelen
     - wastedassign
     - whitespace
-    - wsl
-
-service:
-  golangci-lint-version: 1.51.2 # use the fixed version to not introduce new linters unexpectedly
-  prepare:
-    - echo "here I can run custom commands, but no preparation needed for this repo"
+    - wsl_v5
+  settings:
+    dupl:
+      threshold: 100
+    funlen:
+      lines: 100
+      statements: 50
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 15
+    gosec:
+      excludes:
+        - G204
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    lll:
+      line-length: 140
+    misspell:
+      locale: UK
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - return
+    nolintlint:
+      require-explanation: false
+      require-specific: false
+      allow-unused: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+        path: utils/
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
