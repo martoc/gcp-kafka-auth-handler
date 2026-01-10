@@ -1,6 +1,6 @@
 # Description: Makefile for Go projects
 SHA := $(shell git rev-parse --short HEAD)
-BIN_NAME := $(shell basename `pwd`)
+BIN_NAME := kafka-auth-handler
 PACKAGES = ./...
 TARGET := ./target
 GOPATH := $(shell go env GOPATH)

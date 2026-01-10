@@ -12,49 +12,58 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-//go:generate ${GOPATH}/bin/mockgen -source=auth.go -destination=auth_mock.go -package=handler
+//go:generate ${GOPATH}/bin/mockgen -source=gcp.go -destination=gcp_mock.go -package=handler
 //go:generate ${GOPATH}/bin/mockgen -destination=oauth2_mock.go -package=handler golang.org/x/oauth2 TokenSource
+
+// GoogleService provides Google credential operations.
 type GoogleService interface {
 	FindDefaultCredentials(ctx context.Context, scopes ...string) (*google.Credentials, error)
 }
 
+// DefaultGoogleServiceImpl is the default implementation using Google's OAuth2 library.
 type DefaultGoogleServiceImpl struct {
 	GoogleService
 }
 
+// FindDefaultCredentials retrieves Google Application Default Credentials.
 func (s *DefaultGoogleServiceImpl) FindDefaultCredentials(ctx context.Context, scopes ...string) (*google.Credentials, error) {
 	return google.FindDefaultCredentials(ctx, scopes...)
 }
 
-type AuthHandler struct {
+// GCPAuthHandler handles GCP OAuth token requests for Kafka authentication.
+type GCPAuthHandler struct {
 	GoogleService GoogleService
 }
 
-type AuthHandlerBuilder struct {
+// GCPAuthHandlerBuilder builds GCPAuthHandler instances.
+type GCPAuthHandlerBuilder struct {
 	googleService GoogleService
 }
 
-func NewAuthHandlerBuilder() *AuthHandlerBuilder {
-	return &AuthHandlerBuilder{}
+// NewGCPAuthHandlerBuilder creates a new GCPAuthHandlerBuilder.
+func NewGCPAuthHandlerBuilder() *GCPAuthHandlerBuilder {
+	return &GCPAuthHandlerBuilder{}
 }
 
-func (b *AuthHandlerBuilder) WithGoogleService(googleService GoogleService) *AuthHandlerBuilder {
+// WithGoogleService sets the GoogleService for testing.
+func (b *GCPAuthHandlerBuilder) WithGoogleService(googleService GoogleService) *GCPAuthHandlerBuilder {
 	b.googleService = googleService
 
 	return b
 }
 
-func (b *AuthHandlerBuilder) Build() *AuthHandler {
+// Build creates the GCPAuthHandler.
+func (b *GCPAuthHandlerBuilder) Build() *GCPAuthHandler {
 	if b.googleService == nil {
 		b.googleService = &DefaultGoogleServiceImpl{}
 	}
 
-	return &AuthHandler{
+	return &GCPAuthHandler{
 		GoogleService: b.googleService,
 	}
 }
 
-func (*AuthHandler) buildMessage(googleCreds *google.Credentials) ([]byte, error) {
+func (*GCPAuthHandler) buildMessage(googleCreds *google.Credentials) ([]byte, error) {
 	tokenSource, err := googleCreds.TokenSource.Token()
 	if err != nil {
 		return nil, err
@@ -85,7 +94,8 @@ func (*AuthHandler) buildMessage(googleCreds *google.Credentials) ([]byte, error
 	return json.Marshal(message)
 }
 
-func (h *AuthHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+// ServeHTTP handles the HTTP request for GCP OAuth tokens.
+func (h *GCPAuthHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	log.Println("Received request: ", request.Method, request.URL)
 
 	ctx := context.Background()
@@ -118,4 +128,16 @@ func (h *AuthHandler) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 
 func b64Encode(source string) string {
 	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString([]byte(source))
+}
+
+// AuthHandler is an alias for GCPAuthHandler.
+//
+// Deprecated: Use GCPAuthHandler and NewGCPAuthHandlerBuilder instead.
+type AuthHandler = GCPAuthHandler
+
+// NewAuthHandlerBuilder creates a new GCPAuthHandlerBuilder.
+//
+// Deprecated: Use NewGCPAuthHandlerBuilder instead.
+func NewAuthHandlerBuilder() *GCPAuthHandlerBuilder {
+	return NewGCPAuthHandlerBuilder()
 }
