@@ -1,5 +1,45 @@
 # Usage
 
+## Architecture
+
+The following diagram illustrates how the Kafka Auth Handler integrates with Kafka clients and cloud providers:
+
+```mermaid
+flowchart LR
+    subgraph Client["Kafka Client"]
+        KC[Kafka Consumer/Producer]
+    end
+
+    subgraph Handler["kafka-auth-handler"]
+        HTTP[HTTP Server :14293]
+        GCP[GCP Handler]
+        AWS[AWS Handler]
+    end
+
+    subgraph CloudProviders["Cloud Providers"]
+        GCPIAM[GCP IAM]
+        AWSIAM[AWS IAM]
+    end
+
+    subgraph Kafka["Kafka Cluster"]
+        MSK[AWS MSK]
+        GMK[GCP Managed Kafka]
+    end
+
+    KC -->|OAUTHBEARER token request| HTTP
+    HTTP -->|PROVIDER=gcp| GCP
+    HTTP -->|PROVIDER=aws| AWS
+    GCP -->|Application Default Credentials| GCPIAM
+    AWS -->|IRSA / IAM Credentials| AWSIAM
+    GCPIAM -->|OAuth2 Token| GCP
+    AWSIAM -->|MSK IAM Token| AWS
+    GCP -->|JWT-like token| HTTP
+    AWS -->|JWT-like token| HTTP
+    HTTP -->|access_token| KC
+    KC -->|SASL/OAUTHBEARER| MSK
+    KC -->|SASL/OAUTHBEARER| GMK
+```
+
 ## Using as a Library
 
 The primary purpose of this module is to be used as a library in any Go HTTP server. The `handler` package provides an `http.Handler` implementation that can be mounted on any route.

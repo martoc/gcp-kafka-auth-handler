@@ -10,6 +10,44 @@ A lightweight HTTP server that provides OAuth2 tokens for Kafka clients authenti
 
 This handler provides Kafka-compatible OAuth2 tokens for both GCP Managed Kafka and AWS MSK. It runs as a sidecar or local service, listening on port 14293 and returning JWT-formatted access tokens.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Client["Kafka Client"]
+        KC[Kafka Consumer/Producer]
+    end
+
+    subgraph Handler["kafka-auth-handler"]
+        HTTP[HTTP Server :14293]
+        GCP[GCP Handler]
+        AWS[AWS Handler]
+    end
+
+    subgraph CloudProviders["Cloud Providers"]
+        GCPIAM[GCP IAM]
+        AWSIAM[AWS IAM]
+    end
+
+    subgraph Kafka["Kafka Cluster"]
+        MSK[AWS MSK]
+        GMK[GCP Managed Kafka]
+    end
+
+    KC -->|OAUTHBEARER token request| HTTP
+    HTTP -->|PROVIDER=gcp| GCP
+    HTTP -->|PROVIDER=aws| AWS
+    GCP -->|Application Default Credentials| GCPIAM
+    AWS -->|IRSA / IAM Credentials| AWSIAM
+    GCPIAM -->|OAuth2 Token| GCP
+    AWSIAM -->|MSK IAM Token| AWS
+    GCP -->|JWT-like token| HTTP
+    AWS -->|JWT-like token| HTTP
+    HTTP -->|access_token| KC
+    KC -->|SASL/OAUTHBEARER| MSK
+    KC -->|SASL/OAUTHBEARER| GMK
+```
+
 ### Supported Providers
 
 | Provider | Authentication Method | Credential Source |
@@ -102,6 +140,7 @@ When using AWS MSK with IAM authentication:
 
 - [Usage Guide](./docs/USAGE.md)
 - [Code Style](./docs/CODESTYLE.md)
+- [Claude Code Guide](./CLAUDE.md)
 
 ## Migration from gcp-kafka-auth-handler
 
