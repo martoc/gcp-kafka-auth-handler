@@ -13,9 +13,9 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "gcp-kafka-auth-handler",
-	Short: "",
-	Long:  ``,
+	Use:   "kafka-auth-handler",
+	Short: "Kafka OAuth2 token handler for GCP and AWS",
+	Long:  `A lightweight HTTP server that provides OAuth2 tokens for Kafka clients authenticating against GCP or AWS.`,
 }
 
 func Execute() {

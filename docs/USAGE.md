@@ -7,7 +7,7 @@ The primary purpose of this module is to be used as a library in any Go HTTP ser
 ### Installation
 
 ```bash
-go get github.com/martoc/gcp-kafka-auth-handler
+go get github.com/martoc/kafka-auth-handler
 ```
 
 ### Basic Integration
@@ -18,13 +18,16 @@ package main
 import (
     "log"
     "net/http"
+    "os"
 
-    "github.com/martoc/gcp-kafka-auth-handler/handler"
+    "github.com/martoc/kafka-auth-handler/handler"
 )
 
 func main() {
-    // Create the auth handler
-    authHandler := handler.NewAuthHandlerBuilder().Build()
+    // Create the auth handler based on provider
+    provider := os.Getenv("PROVIDER") // "gcp" or "aws"
+    region := os.Getenv("REGION")     // Required for AWS
+    authHandler := handler.NewAuthHandler(provider, region)
 
     // Mount on your preferred route
     http.Handle("/oauth/token", authHandler)
@@ -34,13 +37,36 @@ func main() {
 }
 ```
 
-### With Custom Google Service
+### Provider-Specific Handlers
 
-You can provide a custom `GoogleService` implementation for testing or custom credential handling:
+#### GCP Handler
 
 ```go
-authHandler := handler.NewAuthHandlerBuilder().
+authHandler := handler.NewGCPAuthHandlerBuilder().Build()
+```
+
+With custom Google service for testing:
+
+```go
+authHandler := handler.NewGCPAuthHandlerBuilder().
     WithGoogleService(myCustomGoogleService).
+    Build()
+```
+
+#### AWS Handler
+
+```go
+authHandler := handler.NewAWSAuthHandlerBuilder().
+    WithRegion("eu-central-1").
+    Build()
+```
+
+With custom token generator for testing:
+
+```go
+authHandler := handler.NewAWSAuthHandlerBuilder().
+    WithRegion("eu-central-1").
+    WithTokenGenerator(myMockTokenGenerator).
     Build()
 ```
 
@@ -52,7 +78,7 @@ authHandler := handler.NewAuthHandlerBuilder().
 import "github.com/gorilla/mux"
 
 r := mux.NewRouter()
-r.Handle("/oauth/token", handler.NewAuthHandlerBuilder().Build())
+r.Handle("/oauth/token", handler.NewAuthHandler("gcp", ""))
 ```
 
 #### chi
@@ -61,7 +87,7 @@ r.Handle("/oauth/token", handler.NewAuthHandlerBuilder().Build())
 import "github.com/go-chi/chi/v5"
 
 r := chi.NewRouter()
-r.Handle("/oauth/token", handler.NewAuthHandlerBuilder().Build())
+r.Handle("/oauth/token", handler.NewAuthHandler("aws", "eu-central-1"))
 ```
 
 #### gin
@@ -70,17 +96,17 @@ r.Handle("/oauth/token", handler.NewAuthHandlerBuilder().Build())
 import "github.com/gin-gonic/gin"
 
 r := gin.Default()
-authHandler := handler.NewAuthHandlerBuilder().Build()
+authHandler := handler.NewAuthHandler("gcp", "")
 r.GET("/oauth/token", gin.WrapH(authHandler))
 ```
 
 ### Response Format
 
-The handler returns a JSON response with the following structure:
+Both GCP and AWS handlers return a JSON response with the following structure:
 
 ```json
 {
-  "access_token": "<header>.<jwt>.<gcp-access-token>",
+  "access_token": "<header>.<claims>.<token>",
   "token_type": "Bearer",
   "expires_in": 3600
 }
@@ -88,18 +114,45 @@ The handler returns a JSON response with the following structure:
 
 The `access_token` is a JWT-like token composed of:
 - Base64-encoded header with type and algorithm
-- Base64-encoded JWT claims (exp, iss, iat, sub)
-- Base64-encoded GCP access token
+- Base64-encoded claims (exp, iss, iat, sub)
+- Base64-encoded cloud provider access token
+
+#### GCP Token Structure
+
+| Field | Value |
+|-------|-------|
+| `alg` | `GOOG_OAUTH2_TOKEN` |
+| `iss` | `Google` |
+| `sub` | GCP service account email |
+
+#### AWS Token Structure
+
+| Field | Value |
+|-------|-------|
+| `alg` | `AWS_MSK_IAM` |
+| `iss` | `AWS` |
 
 ## Standalone Server
 
 The module also includes a standalone server for quick deployment.
 
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PROVIDER` | No | `gcp` | Cloud provider: `gcp` or `aws` |
+| `REGION` | Yes (AWS) | - | AWS region for MSK IAM token generation |
+
 ### From Source
 
 ```bash
 make build
-./target/builds/gcp-kafka-auth-handler-darwin-arm64 serve
+
+# GCP (default)
+./target/builds/kafka-auth-handler-darwin-arm64 serve
+
+# AWS
+PROVIDER=aws REGION=eu-central-1 ./target/builds/kafka-auth-handler-darwin-arm64 serve
 ```
 
 Binaries are built for darwin/linux on amd64/arm64 in `./target/builds/`.
@@ -107,8 +160,15 @@ Binaries are built for darwin/linux on amd64/arm64 in `./target/builds/`.
 ### Docker
 
 ```bash
-docker pull martoc/gcp-kafka-auth-handler:latest
-docker run -p 14293:14293 martoc/gcp-kafka-auth-handler:latest
+# GCP
+docker pull martoc/kafka-auth-handler:latest
+docker run -p 14293:14293 martoc/kafka-auth-handler:latest
+
+# AWS
+docker run -p 14293:14293 \
+  -e PROVIDER=aws \
+  -e REGION=eu-central-1 \
+  martoc/kafka-auth-handler:latest
 ```
 
 The standalone server listens on port 14293.
@@ -120,6 +180,16 @@ The standalone server listens on port 14293.
 ```bash
 curl http://localhost:14293/
 ```
+
+## AWS MSK Configuration
+
+When using AWS MSK with IAM authentication:
+
+1. Use port **9098** for IAM authentication on your MSK bootstrap servers
+2. Set `KAFKA_SECURITY_PROTOCOL=SASL_SSL`
+3. Set `KAFKA_SASL_MECHANISM=OAUTHBEARER`
+4. Configure your Kafka client to use `http://localhost:14293/` as the token endpoint
+5. Ensure your pod/service has proper IAM permissions (via IRSA on EKS)
 
 ## Development
 

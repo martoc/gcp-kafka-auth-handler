@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/martoc/gcp-kafka-auth-handler/handler"
+	"github.com/martoc/kafka-auth-handler/handler"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/oauth2"
@@ -20,19 +20,19 @@ import (
 
 var errExpectedError = errors.New("expected error")
 
-func Test_NewAuthHandlerBuilder(t *testing.T) {
+func TestNewGCPAuthHandlerBuilder(t *testing.T) {
 	t.Parallel()
 
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 	assert.NotNil(t, builder)
 }
 
-func TestAuthHandlerBuilder_Build(t *testing.T) {
+func TestGCPAuthHandlerBuilder_Build(t *testing.T) {
 	t.Parallel()
 
 	// Given
 	expectGoogleService := &handler.DefaultGoogleServiceImpl{}
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 	builder.WithGoogleService(expectGoogleService)
 
 	// When
@@ -42,11 +42,11 @@ func TestAuthHandlerBuilder_Build(t *testing.T) {
 	assert.NotNil(t, service)
 }
 
-func TestAuthHandlerBuilder_BuildWithGoogleServiceShouldCreateDefaultGoodleService(t *testing.T) {
+func TestGCPAuthHandlerBuilder_BuildWithGoogleServiceShouldCreateDefaultGoogleService(t *testing.T) {
 	t.Parallel()
 
 	// Given
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 
 	// When
 	service := builder.Build()
@@ -55,7 +55,7 @@ func TestAuthHandlerBuilder_BuildWithGoogleServiceShouldCreateDefaultGoodleServi
 	assert.NotNil(t, service.GoogleService)
 }
 
-func TestAuthHandler_ServeHTTP(t *testing.T) {
+func TestGCPAuthHandler_ServeHTTP(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -76,7 +76,7 @@ func TestAuthHandler_ServeHTTP(t *testing.T) {
 		Expiry:      expectedExpiry,
 	}, nil)
 
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 	builder.WithGoogleService(googleServiceMock)
 	service := builder.Build()
 
@@ -126,7 +126,7 @@ func TestAuthHandler_ServeHTTP(t *testing.T) {
 	assert.Equal(t, "client-email", jwt["sub"])
 }
 
-func TestAuthHandler_ServeHTTPErrorFeatchingGoogleCredentialsShouldReturnHttpInternalError(t *testing.T) {
+func TestGCPAuthHandler_ServeHTTPErrorFetchingGoogleCredentialsShouldReturnHTTPInternalError(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -137,7 +137,7 @@ func TestAuthHandler_ServeHTTPErrorFeatchingGoogleCredentialsShouldReturnHttpInt
 	googleServiceMock := handler.NewMockGoogleService(ctrl)
 	googleServiceMock.EXPECT().FindDefaultCredentials(gomock.Any(), gomock.Any()).Return(nil, errExpectedError)
 
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 	builder.WithGoogleService(googleServiceMock)
 	service := builder.Build()
 
@@ -156,7 +156,7 @@ func TestAuthHandler_ServeHTTPErrorFeatchingGoogleCredentialsShouldReturnHttpInt
 	assert.Empty(t, body)
 }
 
-func TestAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
+func TestGCPAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
@@ -173,7 +173,7 @@ func TestAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
 	}, nil)
 	tokenSourceMock.EXPECT().Token().Return(nil, errExpectedError)
 
-	builder := handler.NewAuthHandlerBuilder()
+	builder := handler.NewGCPAuthHandlerBuilder()
 	builder.WithGoogleService(googleServiceMock)
 	service := builder.Build()
 
@@ -190,4 +190,12 @@ func TestAuthHandler_ServeHTTPGetTokenFails(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
 	assert.Empty(t, body)
+}
+
+// Test legacy aliases for backwards compatibility.
+func TestNewAuthHandlerBuilder_LegacyAlias(t *testing.T) {
+	t.Parallel()
+
+	builder := handler.NewAuthHandlerBuilder()
+	assert.NotNil(t, builder)
 }
