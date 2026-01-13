@@ -3,7 +3,7 @@ module github.com/martoc/kafka-auth-handler
 go 1.25.5
 
 require (
-	github.com/aws/aws-msk-iam-sasl-signer-go v1.0.0
+	github.com/aws/aws-msk-iam-sasl-signer-go v1.0.4
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
